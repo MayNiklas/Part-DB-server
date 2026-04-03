@@ -227,12 +227,19 @@ class ProjectBomEntriesDataTable implements DataTableTypeInterface
             ],
         ]);
     }
+
     private function getBomEntryUnitPrice(ProjectBOMEntry $entry): BigDecimal
     {
         if ($entry->getPart() instanceof Part) {
-            return $this->pricedetailHelper->calculateAvgPrice($entry->getPart(), $entry->getQuantity()) ?? BigDecimal::zero();
+            $amount = $entry->getQuantity();
+            // If the BOM quantity is below the minimum order amount, use the minimum order amount
+            // for the price lookup — otherwise calculateAvgPrice returns null (no price tier matches).
+            $minOrderAmount = $this->pricedetailHelper->getMinOrderAmount($entry->getPart());
+            if ($minOrderAmount !== null) {
+                $amount = max($amount, $minOrderAmount);
+            }
+            return $this->pricedetailHelper->calculateAvgPrice($entry->getPart(), $amount) ?? BigDecimal::zero();
         }
-
         return $entry->getPrice() ?? BigDecimal::zero();
     }
 
