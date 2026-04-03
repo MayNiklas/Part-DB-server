@@ -41,6 +41,7 @@ use Omines\DataTablesBundle\DataTable;
 use Omines\DataTablesBundle\DataTableTypeInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 
 class ProjectBomEntriesDataTable implements DataTableTypeInterface
 {
@@ -188,7 +189,7 @@ class ProjectBomEntriesDataTable implements DataTableTypeInterface
                     $price = $this->getBomEntryUnitPrice($context);
 
                     // return the price
-                    return  htmlspecialchars(number_format($price->toFloat(),2));
+                    return htmlspecialchars(number_format($price->toScale(2, RoundingMode::UP)->toFloat(), 2));
                 },
                 'visible' => false,
             ])
@@ -198,7 +199,7 @@ class ProjectBomEntriesDataTable implements DataTableTypeInterface
                     $price = $this->getBomEntryUnitPrice($context);
 
                     // return the price
-                    return  htmlspecialchars(number_format($price->toFloat() * $context->getQuantity(),2));
+                    return htmlspecialchars(number_format($price->multipliedBy($context->getQuantity())->toScale(2, RoundingMode::UP)->toFloat(), 2));
                 },
             ])
 
